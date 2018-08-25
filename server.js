@@ -1,7 +1,7 @@
-"use strict";
+'use strict';
 
-const express = require("express");
-const mongoose = require("mongoose");
+const express = require('express');
+const mongoose = require('mongoose');
 
 // Mongoose internally uses a promise-like object,
 // but its better to make Mongoose use built in es6 promises
@@ -9,14 +9,14 @@ mongoose.Promise = global.Promise;
 
 // config.js is where we control constants for entire
 // app like PORT and DATABASE_URL
-const { PORT, DATABASE_URL } = require("./config");
-const { Restaurant } = require("./models");
+const { PORT, DATABASE_URL } = require('./config');
+const { Restaurant } = require('./models');
 
 const app = express();
-app.use(express.json());
+app.use(express.json());//middleware that parses the json that comes in the body. without this req.body would be empty all the time
 
 // GET requests to /restaurants => return 10 restaurants
-app.get("/restaurants", (req, res) => {
+app.get('/restaurants', (req, res) => {
   Restaurant.find()
     // we're limiting because restaurants db has > 25,000
     // documents, and that's too much to process/return
@@ -26,17 +26,17 @@ app.get("/restaurants", (req, res) => {
     // models.js in order to only expose the data we want the API return.    
     .then(restaurants => {
       res.json({
-        restaurants: restaurants.map(restaurant => restaurant.serialize())
+        restaurants: restaurants.map(restaurant => restaurant.serialize())//map creates a serialized copy of the restaurants based off the original
       });
     })
     .catch(err => {
       console.error(err);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ message: 'Internal server error' });//could happen if the database server is down or if the restaurant doesnt match the schema
     });
 });
 
 // can also request by ID
-app.get("/restaurants/:id", (req, res) => {
+app.get('/restaurants/:id', (req, res) => {
   Restaurant
     // this is a convenience method Mongoose provides for searching
     // by the object _id property
@@ -44,12 +44,12 @@ app.get("/restaurants/:id", (req, res) => {
     .then(restaurant => res.json(restaurant.serialize()))
     .catch(err => {
       console.error(err);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ message: 'Internal server error' });
     });
 });
 
-app.post("/restaurants", (req, res) => {
-  const requiredFields = ["name", "borough", "cuisine"];
+app.post('/restaurants', (req, res) => {
+  const requiredFields = ['name', 'borough', 'cuisine'];
   for (let i = 0; i < requiredFields.length; i++) {
     const field = requiredFields[i];
     if (!(field in req.body)) {
@@ -59,7 +59,7 @@ app.post("/restaurants", (req, res) => {
     }
   }
 
-  Restaurant.create({
+  Restaurant.create({//create is also part of mongoose
     name: req.body.name,
     borough: req.body.borough,
     cuisine: req.body.cuisine,
@@ -69,11 +69,11 @@ app.post("/restaurants", (req, res) => {
     .then(restaurant => res.status(201).json(restaurant.serialize()))
     .catch(err => {
       console.error(err);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ message: 'Internal server error' });
     });
 });
 
-app.put("/restaurants/:id", (req, res) => {
+app.put('/restaurants/:id', (req, res) => {
   // ensure that the id in the request path and the one in request body match
   if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
     const message =
@@ -87,7 +87,7 @@ app.put("/restaurants/:id", (req, res) => {
   // if the user sent over any of the updatableFields, we udpate those values
   // in document
   const toUpdate = {};
-  const updateableFields = ["name", "borough", "cuisine", "address"];
+  const updateableFields = ['name', 'borough', 'cuisine', 'address'];
 
   updateableFields.forEach(field => {
     if (field in req.body) {
@@ -97,20 +97,20 @@ app.put("/restaurants/:id", (req, res) => {
 
   Restaurant
     // all key/value pairs in toUpdate will be updated -- that's what `$set` does
-    .findByIdAndUpdate(req.params.id, { $set: toUpdate })
+    .findByIdAndUpdate(req.params.id, { $set: toUpdate })//set is in charge of not overwriting the whole object, only what we send in the update
     .then(restaurant => res.status(204).end())
-    .catch(err => res.status(500).json({ message: "Internal server error" }));
+    .catch(err => res.status(500).json({ message: 'Internal server error' }));
 });
 
-app.delete("/restaurants/:id", (req, res) => {
+app.delete('/restaurants/:id', (req, res) => {
   Restaurant.findByIdAndRemove(req.params.id)
     .then(restaurant => res.status(204).end())
-    .catch(err => res.status(500).json({ message: "Internal server error" }));
+    .catch(err => res.status(500).json({ message: 'Internal server error' }));
 });
 
 // catch-all endpoint if client makes request to non-existent endpoint
-app.use("*", function(req, res) {
-  res.status(404).json({ message: "Not Found" });
+app.use('*', function(req, res) {
+  res.status(404).json({ message: 'Not Found' });
 });
 
 // closeServer needs access to a server object, but that only
@@ -127,12 +127,12 @@ function runServer(databaseUrl, port = PORT) {
         if (err) {
           return reject(err);
         }
-        server = app
+        server = app//saving the app.listen to the server
           .listen(port, () => {
             console.log(`Your app is listening on port ${port}`);
             resolve();
           })
-          .on("error", err => {
+          .on('error', err => {
             mongoose.disconnect();
             reject(err);
           });
@@ -146,7 +146,7 @@ function runServer(databaseUrl, port = PORT) {
 function closeServer() {
   return mongoose.disconnect().then(() => {
     return new Promise((resolve, reject) => {
-      console.log("Closing server");
+      console.log('Closing server');
       server.close(err => {
         if (err) {
           return reject(err);
