@@ -117,6 +117,7 @@ describe('Restaurants API resource', function() {
       //
       // need to have access to mutate and access `res` across
       // `.then()` calls below, so declare it here so can modify in place
+      //comment
       let res;
       return chai.request(app)
         .get('/restaurants')
