@@ -2,7 +2,7 @@
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const faker = require('faker');
+const faker = require('faker');//a library used to simplify the process of creating test data
 const mongoose = require('mongoose');
 
 // this makes the expect syntax available throughout
@@ -77,7 +77,7 @@ function generateRestaurantData() {
 // to ensure data from one test does not stick
 // around for next one
 function tearDownDb() {
-  console.warn('Deleting database');
+  console.warn('Deleting database');//do console.log, error, and warn really technically do anything different?
   return mongoose.connection.dropDatabase();
 }
 
